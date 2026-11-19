@@ -2,15 +2,19 @@
 
 An optional, fully custom booking checkout page for ArrayQ Site Builder. Most sites should link to the built-in checkout instead. Use this when you need your own booking form or host your site elsewhere.
 
-Source: [https://arrayq.com/docs/site-builder/checkout-page](https://arrayq.com/docs/site-builder/checkout-page), last updated 2026-11-07.
+Source: [https://arrayq.com/docs/site-builder/checkout-page](https://arrayq.com/docs/site-builder/checkout-page), last updated 2026-11-19.
 
 > **Tip: You probably do not need this page**
 >
-> Every site hosted on ArrayQ already has a checkout at `/checkout/SERVICE_ID`, plus sign in, order tracking and chat. Link your service cards there instead. See [Built-in pages](built-in-pages.md). Build a custom checkout only if you need your own form, or your site is hosted outside ArrayQ. A file named `checkout.html` still works, because only the `/checkout/` path is reserved.
+> Every site hosted on ArrayQ already has a checkout at `/checkout/SERVICE_ID`, plus sign in, order tracking and chat. Link your service cards there instead. See [Built-in pages](built-in-pages.md). Build a custom checkout only if you need your own form, or your site is hosted outside ArrayQ. Do not name your page `checkout`: `/checkout` always opens the built-in checkout, and `checkout.html` redirects there.
 
-This page puts the pieces together into a working booking flow. The home page lists your services, each card links to `checkout.html?serviceId=...` and the checkout page books the chosen service.
+This page puts the pieces together into a working booking flow. The home page lists your services, each card links to `/book?serviceId=...` and the checkout page books the chosen service.
 
-Copy the two files below into your site and publish. On ArrayQ hosting there is no key to set, the page reads it from the `config.js` file ArrayQ serves.
+Save the page as `book.html` and the script as `app.js`, then publish. On ArrayQ hosting there is no key to set, the page reads it from the `config.js` file ArrayQ serves.
+
+> **Note: In a Liquid theme**
+>
+> Save the page as `templates/book.liquid` so it opens at `/book`, and the script as `assets/checkout.js`. Change the script tags to `/config.js` and `/assets/checkout.js`, and the stylesheet to `/assets/styles.css`. If you use `layout/theme.liquid`, keep only the contents of `body` in the template and load the two scripts from the layout. Link your service cards to `/book?serviceId={{ service._id }}`.
 
 ## The checkout HTML
 
@@ -33,7 +37,7 @@ The form uses fixed field names that the script reads. The `#custom-price-inputs
 
       <div id="checkout-error" role="alert" hidden>
         <h1 id="checkout-error-message"></h1>
-        <a href="./index.html#services">Return to services</a>
+        <a href="/#services">Return to services</a>
       </div>
 
       <div id="checkout-content" hidden>

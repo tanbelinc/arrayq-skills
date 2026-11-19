@@ -1,10 +1,20 @@
 # Services and Booking API
 
-Load your ArrayQ services and create bookings from your website. Endpoints, headers, request fields and response shapes for the public booking API. Hosted sites read the key from config.js.
+The public ArrayQ API for loading services and creating bookings from JavaScript. Use it for custom checkout pages, plain HTML sites and websites hosted outside ArrayQ. Liquid themes get services without it.
 
-Source: [https://arrayq.com/docs/site-builder/services-and-booking](https://arrayq.com/docs/site-builder/services-and-booking), last updated 2026-11-07.
+Source: [https://arrayq.com/docs/site-builder/services-and-booking](https://arrayq.com/docs/site-builder/services-and-booking), last updated 2026-11-19.
 
-Your website uses three public endpoints: one to list services, one to load a single service and one to book it. On a site hosted by ArrayQ you usually only need the first one: list your services and link each card to the [built-in checkout](built-in-pages.md), which loads the service and creates the booking for you. Every request sends your site key in the `x-provider-id` header. On a site hosted by ArrayQ, read it from `window.SITE_CONFIG` in the `config.js` file ArrayQ serves. See [Connect your site](connect-your-site.md).
+> **Tip: Using a Liquid theme?**
+>
+> You do not need this API to show your services. A Liquid theme reads them on the server with `site.services`, which is faster and better for search engines. See [Theme data](theme-data.md). Use this API only for scripts that run in the browser.
+
+The API has three public endpoints: one to list services, one to load a single service and one to book it. Use it when you:
+
+- build a [custom checkout page](custom-checkout-page.md) with your own booking form,
+- run a plain HTML site without Liquid, or
+- host your website outside ArrayQ.
+
+Every request sends your site key in the `x-provider-id` header. On a site hosted by ArrayQ, read it from `window.SITE_CONFIG` in the `config.js` file ArrayQ serves. See [Connect your site](connect-your-site.md).
 
 ## Base URL and headers
 
@@ -65,10 +75,6 @@ async function initializeServiceCatalog() {
 >
 > Build cards with `textContent` instead of `innerHTML`. Service text is typed by people, so this keeps any stray HTML from running on your page.
 
-> **Note**
->
-> The link above opens the built-in checkout. If you built a [custom checkout page](custom-checkout-page.md) instead, link to it with a relative path such as `./book.html?serviceId=...`.
-
 ## Get one service
 
 `GET /api/service/:id?findby=id`
@@ -77,7 +83,7 @@ async function initializeServiceCatalog() {
 | --- | --- | --- |
 | `findby` | `id`, `slug`, `title` | How to read the `:id` part of the path |
 
-On a [custom checkout page](custom-checkout-page.md), use `findby=slug` if you want clean links such as `checkout.html?service=garage-door-repair`. The built-in checkout always takes the service `_id`.
+On a [custom checkout page](custom-checkout-page.md), use `findby=slug` if you want clean links such as `/book?service=garage-door-repair`. The built-in checkout always takes the service `_id`.
 
 ### Price inputs
 

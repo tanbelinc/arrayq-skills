@@ -2,7 +2,7 @@
 
 Every site hosted on ArrayQ gets a ready-made checkout, sign in, registration and customer account with order tracking and live chat. Link to them from your pages instead of building your own.
 
-Source: [https://arrayq.com/docs/site-builder/built-in-pages](https://arrayq.com/docs/site-builder/built-in-pages), last updated 2026-11-07.
+Source: [https://arrayq.com/docs/site-builder/built-in-pages](https://arrayq.com/docs/site-builder/built-in-pages), last updated 2026-11-19.
 
 Every site published on ArrayQ comes with a set of pages you do not have to build. They are served at fixed paths on your site's own domain, work on phones and desktops, and connect to your account automatically. Your website only needs marketing pages, such as a home page, a blog or location pages, plus links to these paths.
 
@@ -51,11 +51,15 @@ Use paths that start with `/` for these pages. They live at the root of your dom
 <a href="/app">My orders</a>
 ```
 
-There is no general checkout page: every checkout is for one service. Your **Book now** buttons should take visitors to your service list, for example `href="#services"`, and each service card links straight to its checkout. Load your services with the [Services API](services-and-booking.md#list-services) and build the link from the service `_id`:
+There is no general checkout page: every checkout is for one service. Your **Book now** buttons should take visitors to your service list, for example `href="/#services"`, and each service links straight to its checkout with its `_id`. In a Liquid theme:
 
-```js
-link.href = `/checkout/${encodeURIComponent(service._id)}`;
+```liquid
+{% for service in site.services %}
+  <a href="/checkout/{{ service._id }}">Book {{ service.title }}</a>
+{% endfor %}
 ```
+
+On a service page, `templates/service.liquid`, use `/checkout/{{ service._id }}` directly. See [Theme data](theme-data.md).
 
 ### Query parameters
 
@@ -66,7 +70,7 @@ link.href = `/checkout/${encodeURIComponent(service._id)}`;
 
 ## Reserved paths
 
-The paths `/login`, `/register`, anything under `/checkout/` and anything under `/app/` always show the built-in pages, even if your folder contains a folder or extension-less file with those names. Files with an extension are not affected, so `app.js` and `checkout.html` still load normally. Use other names for your own pages, for example `contact.html` or `locations/`.
+The paths `/login`, `/register`, anything under `/checkout/` and anything under `/app/` always show the built-in pages, even if your theme has templates with those names. Files with an extension are not affected, so `/assets/app.js` still loads normally. Use other names for your own pages, for example `templates/contact.liquid` or `templates/locations/`.
 
 > **Warning: Preview links**
 >

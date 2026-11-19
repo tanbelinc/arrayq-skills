@@ -1,10 +1,10 @@
 # Publish Your Site
 
-Upload your website folder to ArrayQ Site Builder, preview it on desktop, tablet and mobile, publish updates and remove a site you no longer need.
+Upload your theme folder to ArrayQ Site Builder, preview it on desktop, tablet and mobile, publish updates and remove a site you no longer need.
 
-Source: [https://arrayq.com/docs/site-builder/publish](https://arrayq.com/docs/site-builder/publish), last updated 2026-11-14.
+Source: [https://arrayq.com/docs/site-builder/publish](https://arrayq.com/docs/site-builder/publish), last updated 2026-11-19.
 
-When your files are ready, upload them in the **Builder** tab. ArrayQ checks every file, publishes the site and gives you a link to share.
+When your theme is ready, upload it in the **Builder** tab. ArrayQ checks every file, publishes the site and gives you a link to share.
 
 ## Publish for the first time
 
@@ -14,11 +14,11 @@ When your files are ready, upload them in the **Builder** tab. ArrayQ checks eve
 
 2. **Choose your files**
 
-   Select your whole site folder, or pick individual files. When you pick a folder, its own name is removed from the paths, so `my-site/index.html` is uploaded as `index.html`.
+   Select your whole theme folder, or pick individual files. When you pick a folder, its own name is removed from the paths, so `my-site/templates/index.liquid` is uploaded as `templates/index.liquid`. Hidden files such as `.DS_Store` are left out automatically.
 
 3. **Review the list**
 
-   Check that `index.html` is at the top level and that the total size fits the limits below.
+   Check that `layout`, `templates`, `snippets` and `assets` sit at the top level of the list, and that the total size fits the limits below.
 
 4. **Publish**
 
@@ -33,14 +33,15 @@ When your files are ready, upload them in the **Builder** tab. ArrayQ checks eve
 - **Preview** shows your live site inside the dashboard, with desktop, tablet and mobile views.
 - **Open** opens the live site in a new tab. Share this link until you connect a [custom domain](custom-domain.md).
 
+> **Note**
+>
+> Template previews in the **Templates** tab show the raw files. Liquid tags only render on your published site.
+
 ## Publish an update
 
 Upload the full folder again and click **Publish site**. The new version replaces the old one in a single step, so visitors never see a half-updated site. Your previous version is archived.
 
-> **Note**
->
-> ArrayQ tells browsers not to cache any file of your site, including CSS, JavaScript and images.
-> Visitors get the new version on their next page load.
+You do not need to publish again when your data changes. Service, item and business profile edits in the dashboard show on your site within a minute.
 
 ## Limits
 
@@ -50,12 +51,14 @@ Upload the full folder again and click **Publish site**. The new version replace
 | Size per file | 15 MB |
 | Total size | 50 MB |
 | Path length | 500 characters |
-| Required file | `index.html` at the top level |
+
+There is no required file. A theme without `templates/index.liquid` shows its 404 page at `/`.
 
 Allowed file types:
 
 | Type | Extensions |
 | --- | --- |
+| Theme | `.liquid` |
 | Pages | `.html`, `.htm` |
 | Code and data | `.css`, `.js`, `.mjs`, `.json`, `.map`, `.xml`, `.txt`, `.webmanifest`, `.wasm` |
 | Images | `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`, `.avif`, `.ico` |

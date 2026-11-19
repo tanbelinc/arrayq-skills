@@ -1,98 +1,137 @@
 # Build Your Site
 
-Rules and structure for a static marketing website that runs on ArrayQ Site Builder, including page layout, links to the built-in pages and relative links between your own files.
+The folder structure, routing, layout, snippets and link rules for a Liquid theme on ArrayQ Site Builder. Pages are rendered on the server with your services, so they are fully indexable by search engines.
 
-Source: [https://arrayq.com/docs/site-builder/build-your-site](https://arrayq.com/docs/site-builder/build-your-site), last updated 2026-11-14.
+Source: [https://arrayq.com/docs/site-builder/build-your-site](https://arrayq.com/docs/site-builder/build-your-site), last updated 2026-11-19.
 
-Site Builder hosts **static websites**: HTML, CSS, JavaScript, images and fonts. There is no server code. Your service list loads in the browser through the [Services API](services-and-booking.md), and booking, sign in and the customer account are handled by the [built-in pages](built-in-pages.md).
+A Site Builder website is a **Liquid theme**: a folder of templates that ArrayQ renders on the server for every visit. Liquid is a simple template language. You write normal HTML and drop in tags such as `{{ service.title }}` or `{% for service in site.services %}`. ArrayQ fills them with your data before the page is sent, so visitors and search engines get finished HTML.
 
 > **Tip: Let AI build it**
 >
-> The [Build with AI](build-with-ai.md) page has a single prompt with every rule on this page. Paste it into an AI tool to get a complete site.
+> The [Build with AI](build-with-ai.md) page has a single prompt with every rule on this page. Paste it into an AI tool to get a complete theme.
 
-## Site rules
+## Folder structure
 
-- Put an `index.html` at the top of your folder. It is your home page and the upload fails without it.
-- Use **relative links** between your own files, such as `./about.html` or `./styles.css`.
-  Your published site sits at the root of its ArrayQ link and your custom domain, where links that start with `/` also work.
-  Relative links keep working when you open the folder on your computer before you upload it, where links that start with `/` break.
-- Link to the built-in pages with paths that start with `/`: `/checkout/SERVICE_ID`, `/login`, `/register` and `/app`. They only work on your published site, not in template previews.
-- Do not create folders named `login`, `register`, `checkout` or `app`. Those paths always show the built-in pages. Files with an extension, such as `app.js`, are fine.
-- Keep file and folder names simple: letters, numbers, dashes and dots. Avoid `..` and backslashes.
-- A path that does not exist falls back to your root `index.html`.
-- Only use allowed file types. See [Publish your site](publish.md#limits) for the full list.
+| Folder | What goes in it | Served to visitors |
+| --- | --- | --- |
+| `layout/` | `theme.liquid`, the frame around every page | No, used while rendering |
+| `templates/` | One `.liquid` file per page | Yes, as clean URLs without an extension |
+| `snippets/` | Reusable pieces such as a header, footer or card | No, used while rendering |
+| `assets/` | CSS, JavaScript, images, fonts and other files | Yes, as they are |
 
-> **Warning: No server-side code**
->
-> PHP, Node.js servers and `.env` files do not run on Site Builder. Keep secrets out of your files, because everything you upload is public.
+`.liquid` files are never served directly. A visitor who opens `/templates/index.liquid` gets your 404 page.
 
-## Page structure
+## Pages and URLs
 
-A booking site needs one page and one script. ArrayQ adds `config.js` and the checkout for you.
+Each file in `templates/` becomes a page. URLs have no `.html` or `.liquid` at the end.
 
-| File | Purpose |
+| Template | URL |
 | --- | --- |
-| `index.html` | Your brand, a short pitch and a grid that lists your services |
-| `app.js` | Loads services and renders cards that link to `/checkout/SERVICE_ID` |
-| `styles.css` | Styling |
-| `config.js` | Served by ArrayQ with your API address and site key. You do not upload it |
+| `templates/index.liquid` | `/` |
+| `templates/about.liquid` | `/about` |
+| `templates/locations/austin.liquid` | `/locations/austin` |
+| `templates/service.liquid` | `/services/SERVICE_SLUG`, one page for every active service |
+| `templates/404.liquid` | Any URL that does not match a page, sent with a 404 status |
 
-Add as many marketing pages as you like, such as an about page, location pages or a blog. Give each one the same header and footer.
+- A trailing slash is fine: `/about/` shows the same page as `/about`.
+- A URL that ends in `.html` redirects permanently to the same URL without it, so old links keep working and search engines index one address per page.
+- `/services/SERVICE_SLUG` shows the 404 page when no active service has that slug.
+- Without a `templates/404.liquid`, missing pages show a plain "Page not found" message.
+- Without a `templates/index.liquid`, your home page shows the 404 page.
+
+## The layout
+
+`layout/theme.liquid` wraps every template. Put the parts that repeat on every page here: the `head`, header and footer. Output the page itself with `{{ content_for_layout }}`.
+
+```liquid
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% render 'seo' %}
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  {% render 'header' %}
+  <main id="main">{{ content_for_layout }}</main>
+  {% render 'footer' %}
+</body>
+</html>
+```
+
+Templates then contain only the content of the page:
+
+```liquid
+<h1>{{ site.provider.businessName }}</h1>
+<div class="grid">
+  {% for service in site.services %}
+    {% render 'service-card', service: service %}
+  {% endfor %}
+</div>
+```
+
+Without a `layout/theme.liquid`, each template must be a full HTML document.
+
+## Snippets
+
+Put a reusable piece in `snippets/NAME.liquid` and add it to any template, the layout or another snippet with `{% render 'NAME' %}`. Pass values with `{% render 'service-card', service: service %}`.
+
+`site`, `page` and `service` are available inside every snippet without passing them. Other variables, such as a loop variable, must be passed. See [Theme data](theme-data.md).
+
+## Links
+
+| Link to | Write it as |
+| --- | --- |
+| Your own pages | `/about`, `/locations/austin`, `/services/{{ service.slug }}` |
+| Your assets | `/assets/styles.css`, `/assets/logo.svg` |
+| Home | `/` |
+| A service checkout | `/checkout/{{ service._id }}` |
+| Sign in, account, chat | `/login`, `/register`, `/app`, `/app/messages` |
+
+Always start links with `/`. Pages live at clean URLs such as `/services/junk-removal`, where a relative link like `./styles.css` would point inside `/services/`.
 
 ### Header and footer links
 
 | Button | Link |
 | --- | --- |
-| Book now | Your service list, for example `#services` or `/#services` from other pages |
-| Book a specific service | `/checkout/SERVICE_ID` |
+| Book now | Your service list, for example `/#services` |
+| Book a specific service | `/checkout/{{ service._id }}` |
+| Learn about a service | `/services/{{ service.slug }}` |
 | Sign in | `/login` |
 | Create account | `/register` |
 | Track my order, My orders | `/app` |
 | Message us | `/app/messages` |
-| Home | `/` |
 
-Give the service list fixed IDs so one script can find it on any page that has it:
+## Site rules
 
-```html
-<body>
-  <section id="services">
-    <p id="service-status" role="status">Loading services...</p>
-    <button id="service-retry" type="button" hidden>Try again</button>
-    <div id="service-grid" hidden></div>
-  </section>
-  <script defer src="./config.js"></script>
-  <script defer src="./app.js"></script>
-</body>
+- Do not create templates or folders named `login`, `register`, `checkout` or `app`. Those paths always show the [built-in pages](built-in-pages.md).
+- Keep file and folder names simple: letters, numbers, dashes and dots. Avoid `..` and backslashes.
+- Use only allowed file types. See [Publish your site](publish.md#limits).
+- Everything in `assets/` is public. Never put secrets or keys in any file.
+
+> **Warning: No server-side code**
+>
+> Liquid is the only thing that runs on the server. PHP, Node.js servers and `.env` files do not run on Site Builder.
+
+## JavaScript is optional
+
+Pages are complete without JavaScript. Add a script in `assets/` for things that happen in the browser, such as a mobile menu:
+
+```liquid
+<script defer src="/assets/app.js"></script>
 ```
 
-```js
-if (document.querySelector("#service-grid")) {
-  initializeServiceCatalog();
-}
-```
+If a script needs to call the ArrayQ API, for example a [custom checkout page](custom-checkout-page.md), load `/config.js` first. See [Connect your site](connect-your-site.md).
 
-## Saving the ZIP code
+## Plain HTML sites
 
-If you build a [custom checkout page](custom-checkout-page.md), a ZIP form on the home page makes it faster. Save the value in `localStorage` and fill it in on your checkout page:
+A site without any `templates/*.liquid` file is served as plain static files, without Liquid:
 
-```js
-const STORAGE_KEY = "postalCode";
+- `/about` serves `about.html`, then `about/index.html`.
+- `/about.html` redirects to `/about`.
+- A missing page shows your `404.html`, or a plain "Page not found" message.
 
-function storePostalCode(postalCode) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, postalCode);
-  } catch {
-    return;
-  }
-}
+Plain HTML sites load their services in the browser with the [Services API](services-and-booking.md). Moving to a Liquid theme puts that content in the HTML itself, which is better for search engines.
 
-function getStoredPostalCode() {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) || "";
-  } catch {
-    return "";
-  }
-}
-```
-
-Next, [connect your site](connect-your-site.md) to ArrayQ with `config.js`.
+Next, see everything you can use in a template in [Theme data](theme-data.md).

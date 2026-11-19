@@ -1,16 +1,20 @@
 # Connect Your Site
 
-Sites hosted on ArrayQ need no API key. Load the config.js file ArrayQ serves with your site and your services, bookings, tracker and Orca chatbot connect automatically. Use the site key only for websites hosted elsewhere.
+Liquid themes on ArrayQ need no API key. When your own browser scripts call the ArrayQ API, load the config.js file ArrayQ serves. Use the site key only for websites hosted elsewhere.
 
-Source: [https://arrayq.com/docs/site-builder/api-key](https://arrayq.com/docs/site-builder/api-key), last updated 2026-10-20.
+Source: [https://arrayq.com/docs/site-builder/api-key](https://arrayq.com/docs/site-builder/api-key), last updated 2026-11-19.
 
-Your website needs two things to talk to ArrayQ: the API address and a site key that tells ArrayQ which business a request belongs to. When ArrayQ hosts your site, you do not copy or paste either of them. ArrayQ serves both in a `config.js` file next to your pages.
+A Liquid theme hosted on ArrayQ is already connected. Your business details, services and items are filled in on the server, and the tracker and Orca chatbot are added for you. There is nothing to configure.
+
+You only need the settings on this page when a script running in the visitor's browser calls the ArrayQ API, for example on a [custom checkout page](custom-checkout-page.md) or a plain HTML site. That script needs the API address and a site key that tells ArrayQ which business a request belongs to.
 
 ## Sites hosted on ArrayQ
 
+ArrayQ serves both settings in a `config.js` file at the root of your published site. You do not copy or paste a key.
+
 1. **Load config.js first**
 
-   Add `./config.js` to every page, before your own script. You do not upload this file, ArrayQ serves it at the root of your published site.
+   Add `/config.js` to the page before your own script. You do not upload this file.
 
 2. **Read the settings**
 
@@ -21,8 +25,8 @@ Your website needs two things to talk to ArrayQ: the API address and a site key 
    [Publish](publish.md) your folder. There is no key to set.
 
 ```html
-<script defer src="./config.js"></script>
-<script defer src="./app.js"></script>
+<script defer src="/config.js"></script>
+<script defer src="/assets/app.js"></script>
 ```
 
 On your published site, `config.js` looks like this:
@@ -108,5 +112,5 @@ The tracker and Orca scripts take the key in a `data-site-key` attribute:
 
 If a key leaks or you want a fresh one, click **Regenerate key** in the **API key** tab and confirm. The old key stops working.
 
-- **Hosted on ArrayQ:** nothing to do. `config.js`, the tracker and Orca pick up the new key automatically.
+- **Hosted on ArrayQ:** nothing to do. Your theme, `config.js`, the tracker and Orca pick up the new key automatically.
 - **Hosted elsewhere:** replace the key in your `config.js` and in every tracker or Orca snippet, then deploy your site again.

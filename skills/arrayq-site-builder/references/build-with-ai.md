@@ -1,10 +1,10 @@
 # Build Your Site with AI
 
-A complete, copyable prompt that lets ChatGPT, Claude or any AI coding tool build a ready-to-publish ArrayQ Site Builder website in one go, wired to your services and the built-in checkout, sign in and customer account pages.
+A complete, copyable prompt that lets ChatGPT, Claude or any AI coding tool build a ready-to-publish ArrayQ Site Builder Liquid theme in one go, rendered on the server with your services and wired to the built-in checkout, sign in and customer account pages.
 
-Source: [https://arrayq.com/docs/site-builder/build-with-ai](https://arrayq.com/docs/site-builder/build-with-ai), last updated 2026-11-14.
+Source: [https://arrayq.com/docs/site-builder/build-with-ai](https://arrayq.com/docs/site-builder/build-with-ai), last updated 2026-11-19.
 
-This page is written for AI tools as much as for people. Copy the prompt below, fill in the details at the top and paste it into ChatGPT, Claude, Cursor or any AI coding tool. It contains everything the AI needs to know about ArrayQ, so the site it returns can be uploaded and published as-is.
+This page is written for AI tools as much as for people. Copy the prompt below, fill in the details at the top and paste it into ChatGPT, Claude, Cursor or any AI coding tool. It contains everything the AI needs to know about ArrayQ, so the theme it returns can be uploaded and published as-is.
 
 You can also share the link to this page with an AI tool that can read web pages. Ask it to "build my ArrayQ site following this page" and give it your business details.
 
@@ -19,7 +19,7 @@ The site builder skill carries the same rules and the rest of the Site Builder d
 
 2. **Paste the prompt**
 
-   The AI returns a folder of files: `index.html`, `styles.css`, `app.js` and any extra pages you asked for.
+   The AI returns a theme folder: `layout/theme.liquid`, templates for your pages, snippets and `assets/styles.css`.
 
 3. **Save the files**
 
@@ -29,12 +29,12 @@ The site builder skill carries the same rules and the rest of the Site Builder d
 
    Upload the folder in **Site Builder**, **Builder** tab, and click **Publish site**. See [Publish your site](publish.md).
 
-Your services, checkout, sign in, order tracking and chat work as soon as the site is published. There is nothing else to connect.
+Your services, service pages, checkout, sign in, order tracking and chat work as soon as the site is published. There is nothing else to connect.
 
 ## The prompt
 
 ````text
-You are building a marketing website for a home service business. It will be hosted on ArrayQ Site Builder. Follow every rule below exactly. Return complete, final files, never placeholders like "rest of the code here".
+You are building a marketing website for a home service business as a Liquid theme. It will be hosted on ArrayQ Site Builder, which renders Liquid on the server. Follow every rule below exactly. Return complete, final files, never placeholders like "rest of the code here".
 
 === BUSINESS DETAILS (fill in) ===
 Business name: [e.g. Clearway Junk Co.]
@@ -44,341 +44,167 @@ Phone: [e.g. (512) 555-0134]
 Email: [e.g. hello@clearwayjunk.com]
 Brand colors: [e.g. forest green and lime, or "pick something that fits"]
 Tone: [e.g. friendly and straightforward]
-Extra pages wanted: [e.g. about, 3 location pages for Austin, Round Rock, Cedar Park, a blog index with 3 posts, or "none"]
+Extra pages wanted: [e.g. about, 3 location pages for Austin, Round Rock, Cedar Park, or "none"]
 Anything else: [e.g. licensed and insured, same-day service, family owned since 2015]
 
 === HOW ARRAYQ HOSTING WORKS ===
-1. The site is a static folder: HTML, CSS, JavaScript, images and fonts. No server code, no build step, no frameworks that need compiling, no npm packages. Plain HTML, CSS and vanilla JavaScript only.
-2. The folder must have index.html at the top level. That is the home page.
-3. Allowed file extensions: .html .htm .css .js .mjs .json .map .xml .txt .webmanifest .wasm .png .jpg .jpeg .gif .svg .webp .avif .ico .woff .woff2 .ttf .otf .mp3 .wav .ogg .mp4 .webm .pdf. Nothing else.
-4. Limits: at most 200 files, 15 MB per file, 50 MB total. Prefer inline SVG and CSS for graphics instead of large images.
-5. A URL with no matching file falls back to index.html.
-6. Everything in the folder is public. Never put secrets or API keys in any file.
+1. The site is a Liquid theme (standard Shopify-style Liquid). ArrayQ renders it on the server for every visit, so pages arrive as complete HTML. No build step, no frameworks, no npm packages.
+2. Folder structure:
+     layout/theme.liquid      wraps every page; outputs the page with {{ content_for_layout }}
+     templates/index.liquid   the home page at /
+     templates/service.liquid one page per service at /services/SERVICE_SLUG
+     templates/404.liquid     shown for any URL that does not match a page
+     templates/NAME.liquid    any other page at /NAME (subfolders work: templates/locations/austin.liquid is /locations/austin)
+     snippets/NAME.liquid     reusable pieces, included with {% render 'NAME' %}
+     assets/                  CSS, JavaScript, images and fonts, served at /assets/...
+3. Templates contain only the page content. The layout holds the doctype, head, header and footer.
+4. Inside snippets, site, page and service are available automatically. Any other variable, such as a for loop variable, must be passed: {% render 'service-card', service: service %}.
+5. Allowed file extensions: .liquid .html .htm .css .js .mjs .json .map .xml .txt .webmanifest .wasm .png .jpg .jpeg .gif .svg .webp .avif .ico .woff .woff2 .ttf .otf .mp3 .wav .ogg .mp4 .webm .pdf. Nothing else.
+6. Limits: at most 200 files, 15 MB per file, 50 MB total. Prefer inline SVG and CSS for graphics instead of large images.
+7. Output is not escaped automatically. Add | escape to every value placed inside an HTML attribute.
+8. Only use standard Liquid filters (escape, strip_html, truncate, newline_to_br, date, upcase, downcase, slice, size, where, map, default). An unknown filter breaks the page.
+9. Everything in assets/ is public. Never put secrets or API keys in any file.
 
-=== CONFIG.JS ===
-ArrayQ serves a file named config.js at the root of the published site. It sets:
+=== THEME DATA ===
+These objects are filled in by ArrayQ. Never hard code services or business details that these objects provide.
 
-  window.SITE_CONFIG = Object.freeze({
-    API_BASE_URL: "https://...",
-    SITE_KEY: "pk_...",
-  });
+site.provider: businessName, about (plain text with line breaks), logo (image URL or empty), businessEmail, businessPhone, links (list of URLs), gallery (list of image URLs)
 
-- Every page must load it before app.js:
-    <script defer src="./config.js"></script>
-    <script defer src="./app.js"></script>
-- Do not create config.js. ArrayQ serves it on the published site.
-- When SITE_KEY is empty, the site must still look complete: show sample service cards instead of calling the API.
+site.services: the active services. Each has:
+  _id          use for the checkout link: /checkout/{{ service._id }}
+  title
+  slug         use for the service page: /services/{{ service.slug }}
+  description  HTML written in the dashboard
+  cover        image URL or empty
+  category     list, each with name
+  discount     only set while a discount is active; has displayName, description
+
+service: on templates/service.liquid only, the service from the URL, with the same fields. Empty on every other page.
+
+site.categories: list, each with name.
+site.items: bookable items, each with name, image, price.
+page.path: the current URL, such as /about.
+
+Always handle empty data: use {% for %}...{% else %}...{% endfor %} for lists and {% if %} around optional fields such as logo, cover and discount.
 
 === BUILT-IN PAGES (DO NOT BUILD THESE) ===
-ArrayQ already provides these pages on every published site. Never create files, folders or forms for them. Only link to them, using paths that start with "/":
+ArrayQ already provides these pages on every published site. Never create templates, folders or forms for them. Only link to them:
 
-  /checkout/SERVICE_ID           checkout for one service, works without an account
+  /checkout/{{ service._id }}   checkout for one service, works without an account
   /login                         sign in with an emailed one-time code
   /register                      create an account
   /app                           the customer's orders, status tracker, invoices and live chat
   /app/messages                  live chat with the business
 
 Optional query parameters: /login?next=/app/messages and /login?email=someone@example.com.
-There is no general /checkout page. Every checkout is for one service, so "Book now" buttons must scroll to or link to the services section ("#services" on the home page, "/#services" from other pages).
-The paths /login, /register and everything under /checkout/ and /app/ are reserved. Never create a folder named login, register, checkout or app, or a file with one of those names and no extension. Files with an extension, such as app.js or checkout.html, are fine.
-Do not build a booking form, a contact form that books jobs, a sign in form, an account page, a payment form or a chat widget. The built-in pages handle all of that.
+There is no general /checkout page. Every checkout is for one service, so "Book now" buttons link to the services section at /#services.
+Never create a template named login, register, checkout or app.
+Do not build a booking form, a sign in form, an account page, a payment form or a chat widget. The built-in pages handle all of that.
 
 === LINK RULES ===
-- Links to the built-in pages start with "/": href="/checkout/SERVICE_ID", href="/login", href="/register", href="/app".
-- Links to your own files are relative: href="./about.html", href="./styles.css", src="./assets/logo.svg". From a page inside a subfolder use "../styles.css".
-- The home page link in the header is href="/".
+- Every link starts with "/": href="/", href="/about", href="/services/{{ service.slug }}", href="/assets/styles.css", src="/assets/logo.svg".
+- Never use relative links such as "./styles.css". Pages live at URLs like /services/junk-removal, where relative links break.
+- Never put .html or .liquid in a link.
 
-=== REQUIRED CONTENT ===
-index.html must include:
-1. A header with the business name as the logo (linking to "/"), section links, a "Sign in" link to /login and a primary "Book now" button to #services. On mobile, collapse the links into an accessible menu button (aria-expanded, aria-controls, Escape closes it).
-2. A hero with a clear headline, one short paragraph, a primary button to #services and a secondary button "Track my order" to /app.
-3. A services section with id="services" containing exactly these elements, filled by app.js:
-     <p id="service-status" role="status">Loading services...</p>
-     <button id="service-retry" type="button" hidden>Try again</button>
-     <div id="service-grid" hidden></div>
-4. A section explaining the customer account: book online, track every order, pay invoices online, chat with the team. Include buttons to /register and /login.
-5. A "How it works" section with 3 or 4 steps: book online, the business confirms, the job is done, pay the invoice online.
-6. An FAQ using <details> and <summary>. Accurate answers: booking needs no payment upfront, customers can sign in with an emailed code (no password), invoices are paid online after the job, changes are requested by messaging from the account.
-7. A closing call to action with buttons to #services and /app.
-8. A footer with the business name, phone (tel: link), email (mailto: link), the current year filled in by app.js via [data-year], and links to #services, /app, /register and /login.
-Every extra page uses the same header and footer, loads ./config.js (or ../config.js) and the same app.js, and only runs the service loader if #service-grid exists.
+=== REQUIRED FILES AND CONTENT ===
+layout/theme.liquid:
+  The doctype, html lang, head (charset, viewport, {% render 'seo' %}, favicon /assets/favicon.svg, stylesheet /assets/styles.css), a "Skip to content" link, {% render 'header' %}, <main id="main">{{ content_for_layout }}</main>, {% render 'footer' %} and <script defer src="/assets/app.js"></script>.
 
-=== THE SERVICES API ===
-Load the business's services from the API and render one card per service:
+snippets/seo.liquid:
+  On the service page (when service is set): title "{{ service.title }} | {{ site.provider.businessName }}", a meta description from service.description | strip_html | truncate: 155 | escape, a canonical link to /services/{{ service.slug }} and og:image from service.cover when present.
+  On other pages: a title with site.provider.businessName and a meta description from site.provider.about.
 
-  GET {SITE_CONFIG.API_BASE_URL}/api/service?limit=100&skip=0
-  Headers: Accept: application/json, x-provider-id: {SITE_CONFIG.SITE_KEY}
+snippets/header.liquid:
+  The logo (site.provider.logo if set, otherwise the business name) linking to "/", section links, a "Sign in" link to /login and a primary "Book now" button to /#services. On mobile, collapse the links behind a menu button with data-menu-toggle, aria-expanded="false" and aria-controls pointing at the nav, and give the nav data-menu. assets/app.js opens it; style the open state with [data-menu][data-open].
 
-The response is a JSON array. Use only these fields:
-  _id          string, required
-  title        string, required
-  description  string or empty
-  cover        image URL or empty
+snippets/footer.liquid:
+  The business name, phone (tel: link) and email (mailto: link) from site.provider when set, the current year with {{ "now" | date: "%Y" }}, and links to /#services, /app, /register and /login.
 
-If the array has 100 items, request the next page with skip=100, and so on.
-Errors return a status code and JSON { "message": "..." }. Show that message in #service-status and reveal #service-retry.
-If the list is empty, show "Online booking is not available just yet. Please check back soon."
+snippets/service-card.liquid:
+  Takes service. Shows the cover (or a styled placeholder when empty), the title, a short description (service.description | strip_html | truncate: 140), a "Details" link to /services/{{ service.slug }} and a "Book now" link to /checkout/{{ service._id }}.
 
-Each card shows the cover image (only if it is an https URL, with a styled placeholder otherwise or if the image fails to load), the title, the description (or a short fallback sentence) and a link:
-  href = "/checkout/" + encodeURIComponent(service._id)
-Sample services (shown when SITE_KEY is empty) have no _id, so their link is "#services".
-Build cards with document.createElement and textContent, never innerHTML, because service text is typed by people.
+templates/index.liquid:
+  1. A hero with a clear headline, one short paragraph, a primary button to #services and a secondary button "Track my order" to /app.
+  2. A services section with id="services" that renders snippets/service-card.liquid for every item of site.services, with a friendly message when there are none: "Online booking is not available just yet. Please check back soon."
+  3. A section explaining the customer account: book online, track every order, pay invoices online, chat with the team. Buttons to /register and /login.
+  4. A "How it works" section with 3 or 4 steps: book online, the business confirms, the job is done, pay the invoice online.
+  5. An FAQ using <details> and <summary>. Accurate answers: booking needs no payment upfront, customers sign in with an emailed code (no password), invoices are paid online after the job, changes are requested by messaging from the account.
+  6. A closing call to action with buttons to #services and /app.
+
+templates/service.liquid:
+  The service cover, title, categories, the discount displayName when set, the full description (output as is, it is HTML), a large "Book now" button to /checkout/{{ service._id }}, and a list of the other services (skip the current one by comparing slug).
+
+templates/404.liquid:
+  A short "Page not found" message with links to / and /#services.
+
+Extra pages go in templates/ (for example templates/about.liquid or templates/locations/austin.liquid) and use the same layout automatically.
 
 === REFERENCE app.js ===
-Use this script as the base and extend it only if a page needs more behavior. Replace the sample services with ones that fit the business.
+Save this as assets/app.js. It only drives the mobile menu; the pages are complete without it.
 
 (() => {
 "use strict";
 
-const CONFIG = window.SITE_CONFIG;
-if (!CONFIG || typeof CONFIG !== "object") {
-  throw new Error("The site configuration is missing. Load config.js before app.js.");
-}
+const toggle = document.querySelector("[data-menu-toggle]");
+const menu = document.querySelector("[data-menu]");
 
-const PAGE_SIZE = 100;
-const FALLBACK_DESCRIPTION = "Tell us what you need and where. We confirm the time and price before the visit.";
-const SAMPLE_SERVICES = [
-  { title: "Sample service one", description: "Replace with a real service description." },
-  { title: "Sample service two", description: "Replace with a real service description." },
-  { title: "Sample service three", description: "Replace with a real service description." },
-];
-
-const $ = (selector) => {
-  return document.querySelector(selector);
-};
-
-const request = async (path) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, 25000);
-  try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api${path}`, {
-      headers: { Accept: "application/json", "x-provider-id": CONFIG.SITE_KEY },
-      signal: controller.signal,
-    });
-    const text = await response.text();
-    let payload = null;
-    if (text) {
-      payload = JSON.parse(text);
-    }
-    if (!response.ok) {
-      let message = `Your request could not be completed (${response.status}). Please try again.`;
-      if (typeof payload?.message === "string" && payload.message.trim()) {
-        message = payload.message;
-      }
-      throw new Error(message);
-    }
-    return payload;
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error("The request took too long. Please try again.");
-    }
-    if (error instanceof TypeError) {
-      throw new Error("We could not reach the booking service. Check your connection and try again.");
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
-};
-
-const safeImageUrl = (value) => {
-  if (typeof value !== "string") {
-    return null;
-  }
-  try {
-    const url = new URL(value);
-    if (url.protocol === "https:") {
-      return url.href;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-const createPlaceholder = (index) => {
-  const art = document.createElement("div");
-  art.className = "card-art";
-  art.setAttribute("aria-hidden", "true");
-  art.textContent = String(index + 1).padStart(2, "0");
-  return art;
-};
-
-const checkoutHref = (service) => {
-  if (service._id) {
-    return `/checkout/${encodeURIComponent(service._id)}`;
-  }
-  return "#services";
-};
-
-const createServiceCard = (service, index) => {
-  const card = document.createElement("article");
-  card.className = "service-card";
-  const placeholder = createPlaceholder(index);
-  const cover = safeImageUrl(service.cover);
-  if (cover) {
-    const image = document.createElement("img");
-    image.className = "card-cover";
-    image.src = cover;
-    image.alt = "";
-    image.loading = "lazy";
-    image.addEventListener("error", () => {
-      image.replaceWith(placeholder);
-    }, { once: true });
-    card.append(image);
-  } else {
-    card.append(placeholder);
-  }
-  const body = document.createElement("div");
-  body.className = "card-body";
-  const title = document.createElement("h3");
-  title.textContent = service.title;
-  const description = document.createElement("p");
-  if (typeof service.description === "string" && service.description.trim()) {
-    description.textContent = service.description;
-  } else {
-    description.textContent = FALLBACK_DESCRIPTION;
-  }
-  const link = document.createElement("a");
-  link.className = "card-link";
-  link.href = checkoutHref(service);
-  link.textContent = "Book this";
-  link.setAttribute("aria-label", `Book ${service.title}`);
-  body.append(title, description, link);
-  card.append(body);
-  return card;
-};
-
-const loadAllServices = async () => {
-  const services = [];
-  let skip = 0;
-  while (true) {
-    const page = await request(`/service?limit=${PAGE_SIZE}&skip=${skip}`);
-    if (!Array.isArray(page)) {
-      throw new Error("We could not read the service list. Please try again shortly.");
-    }
-    services.push(...page);
-    if (page.length < PAGE_SIZE) {
-      break;
-    }
-    skip += page.length;
-  }
-  return services.filter((service) => {
-    return typeof service._id === "string" && typeof service.title === "string";
-  });
-};
-
-const renderServices = (services) => {
-  const grid = $("#service-grid");
-  services.forEach((service, index) => {
-    grid.append(createServiceCard(service, index));
-  });
-  $("#service-status").hidden = true;
-  grid.hidden = false;
-};
-
-const initializeServiceCatalog = async () => {
-  const grid = $("#service-grid");
-  const status = $("#service-status");
-  const retry = $("#service-retry");
-  if (!grid || !status || !retry) {
-    return;
-  }
-  grid.replaceChildren();
-  grid.hidden = true;
-  retry.hidden = true;
-  status.hidden = false;
-  status.textContent = "Loading services...";
-  if (!CONFIG.SITE_KEY) {
-    renderServices(SAMPLE_SERVICES);
-    return;
-  }
-  try {
-    const services = await loadAllServices();
-    if (services.length) {
-      renderServices(services);
-    } else {
-      status.textContent = "Online booking is not available just yet. Please check back soon.";
-    }
-  } catch (error) {
-    status.textContent = error.message;
-    retry.hidden = false;
-  }
-};
-
-const initializeMenu = () => {
-  const toggle = $(".menu-toggle");
-  const nav = $("#mobile-nav");
-  if (!toggle || !nav) {
-    return;
-  }
+if (toggle && menu) {
   const setOpen = (open) => {
     toggle.setAttribute("aria-expanded", String(open));
-    nav.hidden = !open;
+    menu.toggleAttribute("data-open", open);
   };
+
   toggle.addEventListener("click", () => {
     setOpen(toggle.getAttribute("aria-expanded") !== "true");
   });
-  nav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      setOpen(false);
-    });
-  });
+
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+    if (event.key === "Escape") {
       setOpen(false);
       toggle.focus();
     }
   });
-};
 
-document.querySelectorAll("[data-year]").forEach((element) => {
-  element.textContent = String(new Date().getFullYear());
-});
-
-initializeMenu();
-const retryButton = $("#service-retry");
-if (retryButton) {
-  retryButton.addEventListener("click", initializeServiceCatalog);
+  menu.addEventListener("click", (event) => {
+    if (event.target.closest("a")) {
+      setOpen(false);
+    }
+  });
 }
-initializeServiceCatalog();
-
 })();
 
 === DESIGN AND QUALITY ===
 - Mobile first and fully responsive from 320px to wide desktop. No horizontal scrolling. Tap targets at least 44px.
-- One stylesheet, styles.css, with CSS custom properties for colors, radius and fonts. Use Google Fonts if you want a custom font.
-- Semantic HTML: header, nav, main with id="main", section with aria-labelledby, footer. A "Skip to content" link. One h1 per page.
+- One stylesheet, assets/styles.css, with CSS custom properties for colors, radius and fonts. Use Google Fonts if you want a custom font.
+- Semantic HTML: header, nav, main with id="main", section with aria-labelledby, footer. One h1 per page.
 - Visible focus styles, color contrast of at least 4.5:1 for text, alt text on meaningful images, aria-hidden on decorative ones.
 - Respect prefers-reduced-motion.
-- Include assets/favicon.svg and link it in every page head. Add a meta description and a descriptive title on every page.
+- Include assets/favicon.svg.
 - Write real, specific copy for this business. No lorem ipsum. Do not invent prices, reviews, ratings, awards or license numbers.
 - Do not use emojis.
 
 === OUTPUT FORMAT ===
 1. First, print the folder tree.
-2. Then print every file in full, each one preceded by its path, for example "index.html", "styles.css", "app.js", "assets/favicon.svg". Do not output config.js.
+2. Then print every file in full, each one preceded by its path, for example "layout/theme.liquid", "templates/index.liquid", "snippets/header.liquid", "assets/styles.css". Do not output config.js.
 3. No explanations between files beyond the path.
 
 === FINAL CHECK BEFORE YOU ANSWER ===
-- index.html exists at the top level.
-- Every page loads ./config.js (or ../config.js) before app.js, and the folder does not contain a config.js.
-- No folder is named login, register, checkout or app (app.js is fine).
-- No booking, sign in, payment or chat forms anywhere.
-- Every "Book now" button points to the services section, and every service card points to /checkout/SERVICE_ID.
-- "Sign in" points to /login, "Track my order" and "My orders" point to /app.
-- Links between your own files are relative.
-- Service cards are built with textContent and link to /checkout/SERVICE_ID.
-- The site looks complete with SITE_KEY set to "".
+- layout/theme.liquid outputs {{ content_for_layout }} and renders the seo, header and footer snippets.
+- templates/index.liquid, templates/service.liquid and templates/404.liquid exist.
+- Services come from site.services, never hard coded.
+- Every service links to /services/{{ service.slug }} and /checkout/{{ service._id }}.
+- "Book now" buttons point to /#services. "Sign in" points to /login. "Track my order" and "My orders" point to /app.
+- Every link starts with "/" and none ends in .html or .liquid.
+- Values inside HTML attributes use | escape.
+- Optional fields (logo, cover, discount, phone, email) are wrapped in {% if %}.
+- No template named login, register, checkout or app. No booking, sign in, payment or chat forms anywhere.
 ````
 
 ## Tips
 
 - Ask for changes in the same chat, for example "make the hero darker" or "add a page for Round Rock". Ask the AI to return the full updated files.
-- Keep your services up to date in **Services** in your dashboard. The site reads them live, so you never need to edit the website when a service changes.
-- After publishing, turn on the [Tracker](tracker.md) and the [Orca chatbot](orca-chatbot.md) from their tabs. ArrayQ adds them to your hosted pages, so the AI does not need to include them.
+- Keep your services up to date in **Services** in your dashboard. The theme reads them on every visit, so you never need to edit the website when a service changes.
+- After publishing, turn on the [Tracker](tracker.md) and the [Orca chatbot](orca-chatbot.md) from their tabs. ArrayQ adds them to your pages, so the AI does not need to include them.
 
 > **Note**
 >

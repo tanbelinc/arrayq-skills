@@ -49,7 +49,7 @@ The [product areas](references/product-areas.md) reference has the detail behind
 
 ## When to load another skill
 
-Load the **arrayq-site-builder** skill when the person wants to build, change, connect or publish a website on ArrayQ, or asks about `config.js`, the services or booking API, the built-in checkout and customer account pages, the tracker, Orca on a website, uploading a site or a custom domain.
+Load the **arrayq-site-builder** skill when the person wants to build, change, connect or publish a website on ArrayQ, or asks about Liquid themes and templates on ArrayQ, `config.js`, the services or booking API, the built-in checkout and customer account pages, the tracker, Orca on a website, uploading a site or a custom domain.
 If it is not installed, it is published at [https://arrayq.com/skills/arrayq-site-builder/SKILL.md](https://arrayq.com/skills/arrayq-site-builder/SKILL.md).
 
 ## Reference files
